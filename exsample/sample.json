@@ -1,0 +1,31 @@
+{
+  "options": {
+    "dest": "dest/",
+    "width": 200,
+    "height": 50
+  },
+  "images": [
+    {
+      "format": "jpg",
+      "name": "test01",
+      "text": "Foo"
+    },
+    {
+      "name": "test02",
+      "text": "Bar",
+      "width": 50,
+      "height": 200
+    },
+    {
+      "name": "test03",
+      "text": "Buzz",
+      "background": "rgba(0, 0, 0, 1)",
+      "color": "rgba(255, 255, 255, .5)"
+    },
+    {
+      "dest": "test/dest/more/",
+      "name": "test04",
+      "text": "Hoge"
+    }
+  ]
+}

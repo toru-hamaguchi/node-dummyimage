@@ -1,0 +1,146 @@
+#!/usr/bin/env node
+
+var _ = require('lodash');
+var path = require('path');
+var optimist = require('optimist');
+var DummyImage = require('../');
+var pkg = require('../package.json');
+
+/**
+ * Process arguments.
+ */
+var processArguements = function() {
+  return optimist
+    .usage('Usage: $0 [options] OUTPUT')
+    .options('t', {
+      alias: 'text',
+      describe: 'Dummy text',
+      default: 'Dummy Image'
+    })
+    .options('b', {
+      alias: 'background',
+      describe: 'Background color (hex or rgba)',
+      default: 'rgba(238, 238, 238, 1)'
+    })
+    .options('c', {
+      alias: 'color',
+      describe: 'Text color (hex or rgba)',
+      default: 'rgba(0, 0, 0, 1)'
+    })
+    .options('f', {
+      alias: 'font',
+      describe: 'Font (size, name)',
+      default: '30px Arial'
+    })
+    .options('width', {
+      describe: 'Image width',
+      default: 350
+    })
+    .options('height', {
+      describe: 'Image height',
+      default: 200
+    })
+    .options('s', {
+      alias: 'size',
+      describe: 'Image size short hand (ex. 200x50)'
+    })
+    .options('i', {
+      alias: 'import',
+      describe: 'JSON file to import'
+    })
+    .options('h', {
+      alias: 'help',
+      describe: 'Show help'
+    })
+    .options('v', {
+      alias: 'version',
+      describe: 'Print version'
+    })
+    .argv;
+};
+
+/**
+ * Create an image.
+ * @param  {Object} config
+ */
+var createImage = function(config) {
+  var dummyImage = new DummyImage(config);
+
+  dummyImage.create(function() {
+    // TODO: Output results.
+  });
+};
+
+/**
+ * Create images from JSON.
+ * @param  {JSON} json
+ */
+var createImagesFromJSON = function(json) {
+  var baseConfig = json.options;
+
+  json.images.forEach(function(config) {
+    createImage(_.extend({}, baseConfig, config));
+  });
+};
+
+/**
+ * Parse output.
+ * @param  {String} output
+ * @return {Object}
+ */
+var parseOutput = function(output) {
+  var o = path.normalize(output);
+  var ext = path.extname(o);
+  var format;
+
+  switch (ext.toLowerCase()) {
+    case '.png':
+    case '.jpg':
+    case '.jpeg':
+      format = ext.replace('.', '');
+      break;
+    default:
+      format = '';
+      break;
+  }
+
+  return {
+    dest: path.dirname(o),
+    name: path.basename(o, ext),
+    format: format
+  };
+};
+
+/**
+ * Main.
+ */
+var main = function() {
+  var argv = processArguements();
+  var output = argv._.slice(-1)[0];
+  var size;
+
+  if (argv.version) {
+    console.log(pkg.version);
+    process.exit(0);
+  }
+
+  if (argv.help || (!argv.import && argv._.length === 0)) {
+    optimist.showHelp();
+    process.exit(0);
+  }
+
+  if (argv.size) {
+    size = argv.size.split('x');
+    argv.width = parseInt(size[0], 10);
+    argv.height = parseInt(size[1], 10);
+  }
+
+  if (argv.import) {
+    createImagesFromJSON(require(argv.import));
+  }
+  else {
+    createImage(_.extend({}, argv, parseOutput(output)));
+  }
+};
+
+main();
